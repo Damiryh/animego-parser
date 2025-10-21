@@ -15,11 +15,13 @@ $ animego-parser --username USERNAME [--output FILENAME] [--format FORMAT]
 |----------------------|---------------------------------------------------------|
 | --username USERNAME  | Имя пользователя, список которого нужно спарсить        |
 | --output OUTPUT      | Имя выходного фала (stdout, если не указан)             |
-| --format FORMAT      | Формат файла (json по умолчанию) (Пока только json :) ) |
+| --format FORMAT      | Формат файла (json, xml) (json по умолчанию)            |
 
 
 ### Формат вывода
+
 #### JSON
+
 ```json
 [
     {
@@ -48,4 +50,19 @@ $ animego-parser --username USERNAME [--output FILENAME] [--format FORMAT]
     },
     ...
 ]
+```
+
+#### XML
+
+```xml
+<AnimeList>
+    <Anime>
+        <title>Этот замечательный мир!</title>
+        <originalTitle>Kono Subarashii Sekai ni Shukufuku wo!</originalTitle>
+        <userStatus>Просмотрено</userStatus>
+        <userScore>9</userScore>
+        <episodes>10/10</episodes>
+        <releaseType>ТВ Сериал</releaseType>
+    </Anime>
+</AnimeList>
 ```

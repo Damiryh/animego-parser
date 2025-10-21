@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup as Soup
 import json
+import xml.etree.ElementTree as xet
 import argparse
 import sys
 
@@ -33,9 +34,9 @@ def parse_single_page(session: requests.Session, username: str, page: int, outpu
 
     content = r["content"]
     lastPage = r["endPage"]
-    
+
     soup = Soup(content, features="html.parser")
-    
+
     for row in soup.select("tr"):
         columns = row.select("td")
         small_poster = columns[0].find("img")["src"]
@@ -55,7 +56,7 @@ def parse_single_page(session: requests.Session, username: str, page: int, outpu
             "episodes": episodes,
             "release_type": release_type,
         })
-    
+
     return not lastPage
 
 
@@ -71,6 +72,21 @@ def parse_list(session: requests.Session, username: str) -> list | None:
         return None
 
 
+def generate_xml(anime_list: list, indent: int | None) -> str:
+    anime_list_xml = xet.Element("AnimeList")
+
+    for anime in anime_list:
+        anime_xml = xet.SubElement(anime_list_xml, "Anime")
+        xet.SubElement(anime_xml, "title").text = anime["title"]
+        xet.SubElement(anime_xml, "originalTitle").text = anime["original_title"]
+        xet.SubElement(anime_xml, "userStatus").text = anime["user_status"]
+        xet.SubElement(anime_xml, "userScore").text = anime["user_score"]
+        xet.SubElement(anime_xml, "episodes").text = anime["episodes"]
+        xet.SubElement(anime_xml, "releaseType").text = anime["release_type"]
+
+    if type(indent) == int:
+        xet.indent(anime_list_xml, space=' ' * indent, level=0)
+    return xet.tostring(anime_list_xml, encoding='unicode')
 
 
 def main():
@@ -86,18 +102,20 @@ def main():
         default="json", required=False)
 
     args = parser.parse_args()
-    
-    if args.format not in {'json',}:
-        print("animego-parser error: only json format supported yet")
+
+    if args.format not in {'json', 'xml'}:
+        print("animego-parser error: supported formats: json, xml")
 
     session = requests.Session()
     session.headers.update(HEADERS)
     session.get(URL) # Update cookies
 
     anime_list = parse_list(session, args.username)
-    
+
     if args.format == "json":
         data = json.dumps(anime_list, indent=4, ensure_ascii=False)
+    elif args.format == "xml":
+        data = generate_xml(anime_list, indent=4)
 
     if args.output:
         with open(args.output, 'w', encoding="utf-8") as file:

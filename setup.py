@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="animego-parser",
-    version="1.0.0",
+    version="1.1.0",
     description="Anime list parser for animego.org",
     url="https://github.com/damiryh/animego-parser",
     author="damiryh",
