@@ -14,8 +14,8 @@ $ animego-parser --username USERNAME [--output FILENAME] [--format FORMAT]
 | Option | Description |
 |----------------------|---------------------------------------------------------|
 | --username USERNAME  | Имя пользователя, список которого нужно спарсить        |
-| --output OUTPUT      | Имя выходного фала (stdout, если не указан)             |
-| --format FORMAT      | Формат файла (json, xml) (json по умолчанию)            |
+| --output OUTPUT      | Имя выходного файла (stdout, если не указан)             |
+| --format FORMAT      | Формат данных (json, xml) (json по умолчанию)            |
 
 
 ### Формат вывода
