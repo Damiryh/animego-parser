@@ -10,8 +10,9 @@ setup(
     license="MIT",
     packages=["animego_parser"],
     install_requires=[
-        "requests>=2.32.5",
         "beautifulsoup4>=4.14.2",
+        "aiohttp>=3.13.2",
+        "asyncio>=4.0.0",
     ],
     entry_points={
         "console_scripts": [

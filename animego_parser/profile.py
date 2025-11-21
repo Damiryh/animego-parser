@@ -37,7 +37,7 @@ async def parse_single_page(session: aiohttp.ClientSession, *, username: str, pa
         if title != None: title = title.get_text().strip()
 
         original_title = columns[1].find("div")
-        if original_title != None: original_titl = original_title.get_text().strip()
+        if original_title != None: original_title = original_title.get_text().strip()
 
         user_status = columns[2].find("span")
         if user_status != None: user_status = user_status.get_text().strip()
@@ -55,7 +55,7 @@ async def parse_single_page(session: aiohttp.ClientSession, *, username: str, pa
             "release_type": release_type,
         })
 
-    return not last_page
+    return last_page
 
 
 async def parse_list(session: aiohttp.ClientSession, username: str) -> list | None:
