@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "animego-parser"
+version = "1.1"
+description = "Anime list parser for animego.org"
+authors = [
+    {name = "Damir Alimbekov (damiryh)", email = "damir.alimbekov.2002@gmail.com"}
+]
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.txt"]
+requires-python = ">= 3.7"
+dependencies = [
+    "beautifulsoup4>=4.14.2",
+    "aiohttp>=3.13.2",
+    "asyncio>=4.0.0",
+]
+
+[project.urls]
+Repository = "https://github.com/damiryh/animego-parser"
+
+[project.scripts]
+animego-parser = "animego_parser:main"
