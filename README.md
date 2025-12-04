@@ -6,9 +6,9 @@
 Эта софтина решает 70% возникающих проблем.
 Парсер написан на Python.
 
-## Использование
+## Парсинг профиля
 ```
-$ animego-parser --username USERNAME [--output FILENAME] [--format FORMAT]
+$ animego-parser profile --username USERNAME [--output FILENAME] [--format FORMAT]
 ```
 
 | Option | Description |
@@ -16,7 +16,6 @@ $ animego-parser --username USERNAME [--output FILENAME] [--format FORMAT]
 | --username USERNAME  | Имя пользователя, список которого нужно спарсить        |
 | --output OUTPUT      | Имя выходного файла (stdout, если не указано)           |
 | --format FORMAT      | Формат данных (json, xml) (json по умолчанию)           |
-
 
 ### Формат вывода
 
