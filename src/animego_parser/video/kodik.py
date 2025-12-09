@@ -196,7 +196,9 @@ async def request_player_data(session: aiohttp.ClientSession, player_url: Option
     if player_url == None: return (None, None)
 
     log.info(f'Request player page from "{player_url}"')
-    r = await session.get(player_url, headers={
+    r = await session.get(player_url, params={
+        'translations': 'true',
+    }, headers={
         'Connection': 'keep-alive',
         'Sec-Fetch-Dest': 'iframe',
         'Sec-Fetch-Mode': 'navigate',
@@ -242,6 +244,8 @@ async def request_player_data(session: aiohttp.ClientSession, player_url: Option
     if player_data == None:
         log.error(f'Can\'t parse data from player page')
         return (None, None)
+
+    print(player_page.body)
 
     translations = Translation.parse_list(player_page)
     if translations == None:

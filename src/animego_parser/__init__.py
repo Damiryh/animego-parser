@@ -4,6 +4,7 @@ import aiohttp
 import sys
 
 from . import profile
+from . import video
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36",
@@ -38,6 +39,18 @@ async def parse_profile(args):
         sys.stdout.write(data)
 
 
+async def parse_video(args):
+    session = aiohttp.ClientSession()
+    session.headers.update(HEADERS)
+
+    URL = "https://animego.me/anime/semya-shpiona-3-2868"
+    player_url = await video.adapters.request_player_url(session, URL)
+    player_data, translations = await video.kodik.request_player_data(session, player_url)
+    #print(player_data)
+
+    await session.close()
+
+
 async def async_main():
     parser = argparse.ArgumentParser(
         description="Anime list parser. ")
@@ -54,10 +67,17 @@ async def async_main():
         help="Output file format (xml/json, json by default)",
         default="json", required=False)
 
+    parser_video = subparsers.add_parser("video", help="parsing video assets from given page")
+
+    parser_video.add_argument("--url", type=str,
+        help="URL of anime page", required=True)
+
     args = parser.parse_args()
 
     if args.subcommand == "profile":
         await parse_profile(args)
+    elif args.subcommand == "video":
+        await parse_video(args)
 
 
 def main():
