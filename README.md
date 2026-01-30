@@ -8,14 +8,14 @@
 
 ## Парсинг профиля
 ```
-$ animego-parser profile --username USERNAME [--output FILENAME] [--format FORMAT]
+$ animego-parser profile -url PROFILE_URL [--output FILENAME] [--format FORMAT]
 ```
 
 | Option | Description |
-|----------------------|---------------------------------------------------------|
-| --username USERNAME  | Имя пользователя, список которого нужно спарсить        |
-| --output OUTPUT      | Имя выходного файла (stdout, если не указано)           |
-| --format FORMAT      | Формат данных (json, xml) (json по умолчанию)           |
+|----------------------|------------------------------------------------------------------------------------|
+| --url PROFILE_URL    | Ссылка на страницу профиля со списком аниме ("https://animego.me/user/<user_id>")  |
+| --output OUTPUT      | Имя выходного файла (stdout, если не указано)                                      |
+| --format FORMAT      | Формат данных (json, xml) (json по умолчанию)                                      |
 
 ### Формат вывода
 

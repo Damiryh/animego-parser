@@ -3,26 +3,31 @@ import asyncio
 import aiohttp
 import sys
 
+from . import misc
 from . import profile
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36",
-}
 
 async def parse_profile(args):
     if args.format not in {'json', 'xml'}:
         print("animego-parser error: supported formats: json, xml")
         exit(1)
 
-    BASE_URL = "https://animego.me"
-
     session = aiohttp.ClientSession()
-    session.headers.update(HEADERS)
-    await session.get(BASE_URL) # Update cookies
+    session.headers.update(misc.HEADERS)
+    await session.get(misc.BASE_URL) # Update cookies
 
-    anime_list = await profile.parse_list(session, args.username)
-    await session.close()
-    if anime_list == None: exit(1)
+    try:
+        anime_list = await profile.parse_list(session,
+            profile_url=args.profile_url,
+            show_progress_bar=bool(args.output),
+        )
+        await session.close()
+
+    except profile.ParsingError as e:
+        print(e)
+        exit(1)
+
+    finally:
+        await session.close()
 
     if args.format == "json":
         data = profile.generate_json(anime_list, indent=4)
@@ -46,8 +51,8 @@ async def async_main():
 
     parser_profile = subparsers.add_parser("profile", help="parsing anime list from user profile")
 
-    parser_profile.add_argument("--username", type=str,
-        help="Anime list owner username", required=True)
+    parser_profile.add_argument("--url", type=str,
+        help="Anime user list url", dest='profile_url', required=True)
     parser_profile.add_argument("--output", type=str,
         help="Output file name (stdout if not specified)", required=False)
     parser_profile.add_argument("--format", type=str,
