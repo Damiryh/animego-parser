@@ -111,11 +111,12 @@ async def parse_list(session: aiohttp.ClientSession, *, profile_url: str, show_p
 
                 if anime_page_url != None:
                     r = await session.get(anime_page_url)
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.8)
                     if r.status == 200:
                         soup = Soup(await r.text(), features='html.parser')
-                        release_type = soup.select_one('.entity-field div.text-break')
-                        release_type = release_type.get_text(" ", strip=True, types=GET_TEXT_TYPES) if release_type != None else "–"
+                        soup = soup.find(lambda tag: tag.get_text(" ", strip=True, types=GET_TEXT_TYPES) == "Тип")
+                        if soup != None: soup = soup.find_next('div')
+                        release_type = soup.get_text(" ", strip=True, types=GET_TEXT_TYPES) if soup != None else "–"
 
                 anime_item['release_type'] = release_type
                 anime_item['user_status'] = user_status_label

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "animego-parser"
-version = "1.3"
+version = "1.3.1"
 description = "Anime list parser for animego.org"
 authors = [
     {name = "Damir Alimbekov (damiryh)", email = "damir.alimbekov.2002@gmail.com"}
