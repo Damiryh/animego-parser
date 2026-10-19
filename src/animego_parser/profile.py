@@ -1,4 +1,5 @@
-from bs4 import BeautifulSoup as Soup, Tag
+from bs4 import BeautifulSoup as Soup
+from bs4.element import Tag, TemplateString, NavigableString
 import xml.etree.ElementTree as xet
 from urllib.parse import urlparse
 from pathlib import Path
@@ -7,12 +8,41 @@ import aiohttp
 import asyncio
 import json
 import re
+from dataclasses import dataclass
 
 from . import misc
 
 
 class ParsingError(Exception):
     pass
+
+GET_TEXT_TYPES = (NavigableString, TemplateString,)
+
+def parse_anime_item(item: Tag) -> dict:
+    title = item.select_one('div.user-mylist__title a')
+    if title != None:
+        title = title.get_text(" ", strip=True, types=GET_TEXT_TYPES)
+
+    original_title = item.select_one('div.fw-lighter')
+    if original_title != None:
+        original_title = original_title.get_text(" ", strip=True, types=GET_TEXT_TYPES)
+
+    episodes = item.select_one('a.link-secondary')
+    if episodes != None:
+        episodes = episodes.get_text(" ", strip=True, types=GET_TEXT_TYPES)
+        episodes = ''.join(episodes.split()[1:])
+
+    user_score = item.select_one('div.user-mylist-rating__value span')
+    if user_score != None:
+        user_score = user_score.get_text(" ", strip=True, types=GET_TEXT_TYPES)
+        user_score = '-' if len(user_score) == 0 else user_score
+
+    return {
+        'title': title,
+        'original_title': original_title,
+        'user_score': user_score,
+        'episodes': episodes,
+    }
 
 
 async def parse_list(session: aiohttp.ClientSession, *, profile_url: str, show_progress_bar: bool) -> list:
@@ -36,8 +66,9 @@ async def parse_list(session: aiohttp.ClientSession, *, profile_url: str, show_p
 
     soup = Soup(await r.text(), features='html.parser')
     items_count = {
-        int(str(button['href']).split('=')[1]): int(cast("Tag", button.select_one('span')).get_text())
-        for button in soup.select('a[data-dynamic="[data-dynamic-user-mylist]"]')
+        int(str(button['href']).split('=')[1]): int(cast("Tag", button.select_one('span')).get_text(" ", strip=True))
+        for button in soup.select('a[data-action="click->profile-my-list#selectType"]')
+        if str(button['href']).split('=')[1] != 'all'
     }
 
     for user_status_name, user_status_value, user_status_label in RECORD_TYPES:
@@ -67,37 +98,13 @@ async def parse_list(session: aiohttp.ClientSession, *, profile_url: str, show_p
                 raise ParsingError(f"Request error (Status code {r.status}): '{await r.text()}'")
             await asyncio.sleep(0.5)
 
-            r = await r.json()
-            if r["status"] != "success":
-                raise ParsingError(f"Server error: {r['status']}")
-
-            content = r["data"]["content"]
-            last_page = r["data"]["endPage"]
+            soup = Soup(await r.text(), features="html.parser")
             page += 1
 
-            soup = Soup(content, features="html.parser")
+            for item in soup.select("div.user-mylist__item div.user-mylist__body"):
+                anime_item = parse_anime_item(item)
 
-            for row in soup.select(".user-mylist__item"):
-                columns = row.select("td")
-
-                title = row.select_one('.user-mylist__title')
-                if title != None: title = title.get_text().strip()
-
-                original_title = row.select_one('.fw-lighter')
-                if original_title != None: original_title = original_title.get_text().strip()
-
-                user_score = row.select_one('.user-mylist-rating__value span[data-rating-value]')
-                user_score = user_score.get_text().strip() if user_score != None else ""
-                user_score = user_score if len(user_score) > 0 else "–"
-
-                episodes = row.select_one('a.link-secondary')
-                if episodes != None:
-                    m = re.search(r'(\d+)\s*?\/\s*?(\d+)', episodes.get_text().strip())
-                    episodes = m.group(1) + '/' + m.group(2) if m != None else "–"
-                else:
-                    episodes = "–"
-
-                anime_page_url = row.select_one('.user-mylist__title a')
+                anime_page_url = item.select_one('.user-mylist__title a')
                 anime_page_url = anime_page_url.get('href') if anime_page_url != None else None
                 anime_page_url = misc.BASE_URL + str(anime_page_url) if anime_page_url != None else None
                 release_type = "–"
@@ -108,23 +115,21 @@ async def parse_list(session: aiohttp.ClientSession, *, profile_url: str, show_p
                     if r.status == 200:
                         soup = Soup(await r.text(), features='html.parser')
                         release_type = soup.select_one('.entity-field div.text-break')
-                        release_type = release_type.get_text().strip() if release_type != None else "–"
+                        release_type = release_type.get_text(" ", strip=True, types=GET_TEXT_TYPES) if release_type != None else "–"
 
-                anime_list.append({
-                    "title": title,
-                    "original_title": original_title,
-                    "user_status": user_status_label,
-                    "user_score": user_score,
-                    "episodes": episodes,
-                    "release_type": release_type,
-                })
+                anime_item['release_type'] = release_type
+                anime_item['user_status'] = user_status_label
 
+                anime_list.append(anime_item)
                 item_count += 1
+
                 if show_progress_bar:
                     misc.progress_bar(item_count,
                         target=items_count[user_status_value],
                         prefix=f'Parsing list "{user_status_label}"',
                     )
+
+            last_page = (item_count == items_count[user_status_value])
 
     return anime_list
 
